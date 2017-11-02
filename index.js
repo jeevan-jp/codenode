@@ -1,7 +1,4 @@
-var rect = {
-    area: (x,y) => x*y,
-    perimeter: (x,y) => 2*(x+y)
-}
+var rect = require('./rectangle');
 
 function showRect(l,b) {
     if(l<=0 || b<=0) {
