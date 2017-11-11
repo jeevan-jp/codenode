@@ -14,8 +14,8 @@ const server = http.createServer((req, res) => {
         else fileurl = req.url;
 
         var filepath = path.resolve('./public' + fileurl);
-        var pathext = path.extname(filepath);
-        if(pathext == '.html') {
+        var pathext = path.extname(filepath);   
+        if(pathext == '.html') {                    
             fs.exists(filepath, (exists) => {
                 if(!exists) {
                     res.statusCode = 404;
