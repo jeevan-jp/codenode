@@ -8,7 +8,7 @@ const connect = mongoose.connect(url);
 
 connect.then((db) => {
 
-    var db = mongoose.connection;
+    db = mongoose.connection;
 
     console.log('Connected correctly to server');
 
