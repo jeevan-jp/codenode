@@ -23,7 +23,7 @@ dishRouter.route('/')
         console.log('dish added ', dish);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.send(dish);
+        res.json(dish);
     }, (err) => next(err))
     .catch((err) => next(err));
 })
@@ -74,7 +74,7 @@ dishRouter.route('/:dishId')
         res.json(resp);
     }, (err) => next(err))
     .catch((err) => next(err));
-})
+});
 
 dishRouter.route('/:dishId/comments')
 .get((req, res, next) => {
