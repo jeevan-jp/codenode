@@ -34,32 +34,42 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('1234-5678-9876-5432-1000'));
 
 // Before providing the actual contents(files) to the user 
 // we'll carry out authentication
 function auth (req,res, next) {
-  console.log(req.headers);
-  const authHeader = req.headers.authorization;
-  if(!authHeader) {
-    let err = new Error('You are not authenticated');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    return next(err);
-  }
-
-  let auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
-  const user = auth[0];
-  const pass = auth[1];
-
-  if(user === 'admin' && pass === 'password') {
-    console.log('uname: ' + user + ' pass: ' + pass);
-    next(); // Authorized
+  console.log(req.signedCookies);
+  if(!req.signedCookies.user) {
+    const authHeader = req.headers.authorization;
+    if(!authHeader) {
+      let err = new Error('You are not authenticated');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      return next(err);
+    }
+  
+    let auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    const user = auth[0];
+    const pass = auth[1];
+  
+    if(user === 'admin' && pass === 'password') {
+      res.cookie('user', 'admin', {signed:'true'});
+      next(); // Authorized
+    } else {
+      let err = new Error('Wrong Username or password');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      return next(err);
+    }
   } else {
-    let err = new Error('Username or password do not match');
-    res.setHeader('WWW-Authenticate', 'Basic');
-    err.status = 401;
-    return next(err);
+    if(req.signedCookies.user === 'admin') {
+      next();
+    } else {
+      let err = new Error('You are not authenticated.');
+      err.status = 401;
+      return next(err);
+    }
   }
 }
 
