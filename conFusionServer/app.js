@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -34,13 +36,21 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser('1234-5678-9876-5432-1000'));
+// app.use(cookieParser('1234-5678-9876-5432-1000'));
+
+app.use(session({
+  name: 'session-id',
+  secret: '1234-5678-9876-5432-1000',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}));
 
 // Before providing the actual contents(files) to the user 
 // we'll carry out authentication
 function auth (req,res, next) {
-  console.log(req.signedCookies);
-  if(!req.signedCookies.user) {
+  console.log(req.session);
+  if(!req.session.user) {
     const authHeader = req.headers.authorization;
     if(!authHeader) {
       let err = new Error('You are not authenticated');
@@ -54,7 +64,7 @@ function auth (req,res, next) {
     const pass = auth[1];
   
     if(user === 'admin' && pass === 'password') {
-      res.cookie('user', 'admin', {signed:'true'});
+      req.session.user = 'admin';
       next(); // Authorized
     } else {
       let err = new Error('Wrong Username or password');
@@ -63,7 +73,7 @@ function auth (req,res, next) {
       return next(err);
     }
   } else {
-    if(req.signedCookies.user === 'admin') {
+    if(req.session.user === 'admin') {
       next();
     } else {
       let err = new Error('You are not authenticated.');
